@@ -1,0 +1,13 @@
+#view{
+	-fx-background-color: #afcfdc;
+}
+
+.button{
+	 -fx-background-color: transparent;
+}
+
+#backButton {
+	 -fx-background-color: #3887a8;
+	 -fx-text-fill:white;
+	
+}

@@ -1,0 +1,2 @@
+lanzar app:
+mvn clean install exec:java
