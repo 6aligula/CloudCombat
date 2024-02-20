@@ -1,5 +1,5 @@
 package dad.cloudcombat.engine;
 
-public class IA {
-
+public class Ship {
+    
 }
