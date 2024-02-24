@@ -57,21 +57,38 @@ public class GameController implements Initializable {
 		if (event.getSource() instanceof Button) {
 			Button btn = (Button) event.getSource();
 			String buttonId = btn.getId();
-			System.out.println("Botón presionado: " + buttonId);
-			// Aquí puedes agregar más lógica basada en el ID del botón
+			//System.out.println("Botón presionado: " + buttonId);
+			
+			// Determina si el botón pertenece al jugador o a la IA y actúa en consecuencia
+			if (isPlayerButton(buttonId)) {
+				System.out.println("Botón presionado: " + buttonId);
+				// Lógica para el botón del jugador
+				//processPlayerTurn(btn);
+			} else {
+				System.out.println("Botón presionado: " + buttonId);
+				// Lógica para el botón de la IA
+				//processAITurn(btn);
+			}
 		}
-
-		// Aquí puedes agregar más lógica basada en el ID del botón
-        // Por ejemplo, verificar si esa posición contiene una parte del barco
-        /*if (esParteDelBarco(buttonId)) {
-            btn.setStyle("-fx-background-color: #ff0000;"); // Marcar como golpeado
-            System.out.println("¡Tocado!");
-        } else {
-            btn.setStyle("-fx-background-color: #bfbfbf;"); // Marcar como agua
-            System.out.println("Agua.");
-        }*/
-		
 	}
+	
+	// Función auxiliar para verificar si el botón pertenece al jugador
+	private boolean isPlayerButton(String buttonId) {
+		return buttonId.startsWith("playerBtn");
+	}
+	
+	// Procesa el turno del jugador
+	private void processPlayerTurn(Button btn) {
+		// Aquí tu lógica para cuando el jugador hace un movimiento
+		// Por ejemplo, actualizar el modelo y la vista
+	}
+	
+	// Procesa el turno de la IA (si la IA usa la interfaz para hacer movimientos)
+	private void processAITurn(Button btn) {
+		// Aquí tu lógica para cuando la IA hace un movimiento
+		// Dependiendo del juego, puede que no necesites esta parte
+	}
+	
 	// Método de ejemplo para determinar si el botón es parte de un barco
 	private boolean esParteDelBarco(String buttonId) {
 		// Implementa tu lógica aquí, por ejemplo:
