@@ -1,8 +1,11 @@
 package dad.cloudcombat.engine;
 
-class AI {
+public class AI {
     private Board board;
-
+    
+    public AI() {
+        // Inicialización de la IA
+    }   
     public AI(Board board) {
         this.board = board;
         // Colocar barcos aleatoriamente en el tablero...

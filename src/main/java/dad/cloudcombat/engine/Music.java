@@ -36,7 +36,15 @@ public class Music {
     
 
     public void stop() {
-        mediaPlayer.stop();
+        try {
+            if (mediaPlayer != null) {
+                mediaPlayer.stop();
+            } else {
+                System.out.println("MediaPlayer no se ha inicializado correctamente.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace(); // Imprime la traza de la pila de la excepción
+        }
     }
 
     public void pause() {
@@ -44,7 +52,12 @@ public class Music {
     }
 
     public void setVolume(double volume) {
-        mediaPlayer.setVolume(volume);
+        try {
+            mediaPlayer.setVolume(volume);
+
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
     public double getVolume() {
