@@ -3,6 +3,7 @@ package dad.cloudcombat.ui;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Random;
 import java.util.ResourceBundle;
 
 import javafx.event.ActionEvent;
@@ -143,18 +144,32 @@ public class GameController implements Initializable {
 				// System.out.println("llega aqui? ");
 				String buttonId = "playerBtn";
 				// System.out.println("playerGrid: " + buttonId);
-				Button btn = (Button) playerGrid.lookup("#" + buttonId);
 				// Actualizar el tablero del jugador
 				for (int i = 0; i < game.getPlayerBoard().getSize(); i++) {
 					for (int j = 0; j < game.getPlayerBoard().getSize(); j++) {
 						buttonId = "playerBtn" + i + j;
+						Button btn = (Button) playerGrid.lookup("#" + buttonId);
 
-						btn = (Button) playerGrid.lookup("#" + buttonId);
-						if (btn != null && game.getPlayerBoard().hasShipAt(i, j)) {
-							// Cambia el estilo del botón para indicar la presencia del barco
-							btn.setStyle("-fx-background-color: Green;");
-							System.out.println("Barco visualmente actualizado en " + i + ", " + j);
+						if (btn != null) {
+							if (game.getPlayerBoard().hasShipAt(i, j)) {
+								if (game.getPlayerBoard().isShotAt(i, j)) {
+									btn.setStyle("-fx-background-color: red;"); // Acierto
+								} else {
+									btn.setStyle("-fx-background-color: green;"); // Barco no golpeado
+								}
+							} else if (game.getPlayerBoard().isShotAt(i, j)) {
+								btn.setStyle("-fx-background-color: gray;"); // Disparo fallido
+							} else {
+								btn.setStyle(""); // Sin acción
+							}
 						}
+
+						// btn = (Button) playerGrid.lookup("#" + buttonId);
+						// if (btn != null && game.getPlayerBoard().hasShipAt(i, j)) {
+						// // Cambia el estilo del botón para indicar la presencia del barco
+						// btn.setStyle("-fx-background-color: Green;");
+						// System.out.println("Barco visualmente actualizado en " + i + ", " + j);
+						// }
 					}
 				}
 			}
@@ -170,19 +185,29 @@ public class GameController implements Initializable {
 				return; // Sale del método si aiGrid es null para evitar NullPointerException
 			} else {
 				String buttonId = "btn";
-				// System.out.println("aiGrid: " + buttonId);
-				Button btn = (Button) aiGrid.lookup("#" + buttonId);
 				// Actualizar el tablero del jugador
 				for (int i = 0; i < game.getAIBoard().getSize(); i++) {
 					for (int j = 0; j < game.getAIBoard().getSize(); j++) {
 						buttonId = "btn" + i + j;
+						Button btn = (Button) aiGrid.lookup("#" + buttonId);
 
-						btn = (Button) aiGrid.lookup("#" + buttonId);
-						if (btn != null && game.getAIBoard().hasShipAt(i, j)) {
-							// Cambia el estilo del botón para indicar la presencia del barco
-							btn.setStyle("-fx-background-color: Green;");
-							System.out.println("Barco visualmente actualizado en " + i + ", " + j);
+						if (btn != null) {
+							if (game.getAIBoard().isShotAt(i, j)) {
+								if (game.getAIBoard().hasShipAt(i, j)) {
+									btn.setStyle("-fx-background-color: red;"); // Indica un acierto
+								} else {
+									btn.setStyle("-fx-background-color: gray;"); // Indica un fallo
+								}
+							} else {
+								btn.setStyle("-fx-background-color: blue;"); // Estado por defecto (agua)
+							}
 						}
+
+						// if (btn != null && game.getAIBoard().hasShipAt(i, j)) {
+						// // Cambia el estilo del botón para indicar la presencia del barco
+						// btn.setStyle("-fx-background-color: Green;");
+						// System.out.println("Barco visualmente actualizado en " + i + ", " + j);
+						// }
 					}
 				}
 			}
@@ -190,8 +215,6 @@ public class GameController implements Initializable {
 			System.out.println("Intento fallido de colocar barco de la IA");
 			e.printStackTrace(); // Captura cualquier otra excepción inesperada.
 		}
-
-	
 	}
 
 	@FXML
@@ -199,19 +222,19 @@ public class GameController implements Initializable {
 		try {
 			// Lógica del método
 			if (event.getSource() instanceof Button) {
-				Button btn = (Button) event.getSource();
-				String buttonId = btn.getId();
+			
 				// System.out.println("Botón presionado: " + buttonId);
 
-				// Determina si el botón pertenece al jugador o a la IA y actúa en consecuencia
-				if (isPlayerButton(buttonId)) {
-					System.out.println("Botón presionado: " + buttonId);
-					// Lógica para el botón del jugador
-					// processPlayerTurn(btn);
-				} else {
-					System.out.println("Botón presionado: " + buttonId);
-					// Lógica para el botón de la IA
-					// processAITurn(btn);
+				if (event.getSource() instanceof Button) {
+					Button btn = (Button) event.getSource();
+					String buttonId = btn.getId();
+		
+					// Si el botón es del tablero de la IA y es el turno del jugador
+					if (buttonId.startsWith("btn") && game.isPlayerTurn()) {
+						processPlayerTurn(btn);
+						// Después del turno del jugador, es el turno de la IA
+						processAITurn(); // Nota que processAITurn no toma ningún argumento
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -220,28 +243,31 @@ public class GameController implements Initializable {
 
 	}
 
-	// Función auxiliar para verificar si el botón pertenece al jugador
-	private boolean isPlayerButton(String buttonId) {
-		return buttonId.startsWith("playerBtn");
-	}
-
 	// Procesa el turno del jugador
 	private void processPlayerTurn(Button btn) {
-		// Aquí tu lógica para cuando el jugador hace un movimiento
-		// Por ejemplo, actualizar el modelo y la vista
+
+		System.out.println("Botón presionado en el tablero de la IA: " + btn.getId());
+		// Extrae las coordenadas desde el ID del botón
+		String buttonId = btn.getId();
+		if (!buttonId.startsWith("btn")) {
+			// El botón no corresponde a un botón del tablero de la IA.
+			return;
+		}
+		String coordinates = buttonId.replace("btn", "");
+		int x = Integer.parseInt(coordinates.substring(0, 1));
+		int y = Integer.parseInt(coordinates.substring(1, 2));
+
+		// Realiza el disparo si es el turno del jugador y el disparo es válido
+		if (!game.getAIBoard().isShotAt(x, y)) {
+			game.playerTurn(new Point(x, y));
+			updateBoardView(); // Actualiza la vista para reflejar el nuevo estado del tablero
+		}
 	}
 
 	// Procesa el turno de la IA (si la IA usa la interfaz para hacer movimientos)
-	private void processAITurn(Button btn) {
-		// Aquí tu lógica para cuando la IA hace un movimiento
-		// Dependiendo del juego, puede que no necesites esta parte
+	private void processAITurn() {
+		//System.out.println("Botón presionado en el tablero del jugador por la IA: " + btn.getId());
+		game.aiTurn(); // Ahora aiTurn no necesita ningún parámetro
+		updateBoardView(); // Actualiza la vista para reflejar el nuevo estado del tablero
 	}
-
-	// Método de ejemplo para determinar si el botón es parte de un barco
-	private boolean esParteDelBarco(String buttonId) {
-		// Implementa tu lógica aquí, por ejemplo:
-		// return losBarcos.contains(buttonId);
-		return false; // Sustituye esto por tu lógica real
-	}
-
 }

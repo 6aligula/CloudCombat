@@ -2,6 +2,7 @@ package dad.cloudcombat.engine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Game {
     private Board playerBoard;
@@ -9,6 +10,7 @@ public class Game {
     private Player player;
     private AI ai;
     private boolean isPlayerTurn;
+
     private List<Ship> playerShips;
     private List<Ship> aiShips;
     private GameState gameState;
@@ -25,6 +27,13 @@ public class Game {
 
         // Aquí podrías inicializar los barcos, etc.
         initializeShips();
+    }
+    public boolean isPlayerTurn() {
+        return isPlayerTurn;
+    }
+
+    public void setPlayerTurn(boolean playerTurn) {
+        isPlayerTurn = playerTurn;
     }
 
     public List<Ship> getPlayerShips() {
@@ -72,8 +81,38 @@ public class Game {
 
     // Verifica el estado del juego después de cada acción
     private void checkGameState() {
-        // Lógica para verificar si el juego ha terminado
+        boolean playerShipsAllHit = areAllShipsSunk(playerBoard, playerShips);
+        boolean aiShipsAllHit = areAllShipsSunk(aiBoard, aiShips);
+    
+        if (playerShipsAllHit && !aiShipsAllHit) {
+            gameState = GameState.AI_WIN;
+            System.out.println("La IA ha ganado el juego.");
+        } else if (!playerShipsAllHit && aiShipsAllHit) {
+            gameState = GameState.PLAYER_WIN;
+            System.out.println("El jugador ha ganado el juego.");
+        } else if (playerShipsAllHit) {
+            gameState = GameState.DRAW; // Este caso puede ser poco común y depende de las reglas específicas del juego
+            System.out.println("El juego ha terminado en empate.");
+        } else {
+            // El juego continúa
+            return;
+        }
+    
+        // Si se llega a este punto, el juego ha terminado
+        //endGame(); // Puedes definir este método para realizar cualquier limpieza final o preparación para un nuevo juego
     }
+    // Método para verificar si todos los barcos han sido hundidos
+    private boolean areAllShipsSunk(Board board, List<Ship> ships) {
+        for (Ship ship : ships) {
+            for (Point point : ship.getCoordinates()) {
+                if (!board.isShotAt(point.getX(), point.getY())) {
+                    return false; // Si cualquier parte del barco no ha sido golpeada, el barco no está hundido
+                }
+            }
+        }
+        return true; // Todos los barcos han sido hundidos
+    }
+    
 
     // Getters y setters según sea necesario
     public Board getPlayerBoard() {
@@ -119,43 +158,55 @@ public class Game {
     }
 
     // Métodos para manejar los turnos de los jugadores
-    // public void playerTurn(Point shot) {
-    // // Suponiendo que shot es la posición a la que el jugador quiere disparar en
-    // el
-    // // tablero de la IA
-    // if (!aiBoard.isShotAt(shot)) { // Necesitas implementar este método en Board
-    // aiBoard.recordShot(shot); // Registra el disparo en el tablero de la IA
-    // if (aiBoard.hasShipAt(shot.getX(), shot.getY())) {
-    // // Acertó a un barco, manejar lógicamente el golpe
-    // } else {
-    // // Falló, manejar lógicamente el fallo
-    // }
-    // // Cambiar el turno al de la IA, si es necesario
-    // isPlayerTurn = false;
-    // // Verificar el estado del juego después del turno
-    // checkGameState();
-    // }
-    // }
+    public void playerTurn(Point shot) {
+        if (!isPlayerTurn || isGameOver()) {
+            System.out.println("No es el turno del jugador o el juego ha terminado.");
+            return; // O manejar de otra manera
+        }
 
-    // public void aiTurn() {
-    // // La IA decide a dónde disparar en el tablero del jugador
-    // // Puedes implementar una lógica simple aleatoria o una más compleja basada
-    // en
-    // // estrategia
-    // Point aiShot = ai.decideShot(); // Necesitarías implementar decideShot() en
-    // AI
-    // if (!playerBoard.isShotAt(aiShot)) {
-    // playerBoard.recordShot(aiShot);
-    // if (playerBoard.hasShipAt(aiShot.getX(), aiShot.getY())) {
-    // // La IA acertó, manejar lógicamente el golpe
-    // } else {
-    // // La IA falló, manejar lógicamente el fallo
-    // }
-    // // Cambiar el turno al jugador
-    // isPlayerTurn = true;
-    // // Verificar el estado del juego después del turno
-    // checkGameState();
-    // }
-    // }
+        if (aiBoard.isShotAt(shot.getX(), shot.getY())) {
+            System.out.println("Ya has disparado a esta posición.");
+            return; // O manejar de otra manera
+        }
+
+        aiBoard.recordShot(shot.getX(), shot.getY());
+        if (aiBoard.hasShipAt(shot.getX(), shot.getY())) {
+            System.out.println("¡Acertaste un barco de la IA!");
+            // Aquí puedes agregar lógica para verificar si el barco ha sido hundido
+            // completamente.
+        } else {
+            System.out.println("Fallaste.");
+        }
+
+        isPlayerTurn = false; // Cambia el turno a la IA
+        checkGameState(); // Verifica el estado del juego para ver si continúa o termina
+    }
+
+    public void aiTurn() {
+        if (isPlayerTurn || isGameOver()) {
+            System.out.println("No es el turno de la IA o el juego ha terminado.");
+            return; // O manejar de otra manera
+        }
+
+        // Implementación simple de selección aleatoria para el disparo de la IA
+        Random random = new Random();
+        int x, y;
+        do {
+            x = random.nextInt(playerBoard.getSize());
+            y = random.nextInt(playerBoard.getSize());
+        } while (playerBoard.isShotAt(x, y)); // Repite hasta encontrar una posición no disparada
+
+        playerBoard.recordShot(x, y);
+        if (playerBoard.hasShipAt(x, y)) {
+            System.out.println("La IA acertó uno de tus barcos!");
+            // Aquí puedes agregar lógica para verificar si el barco ha sido hundido
+            // completamente.
+        } else {
+            System.out.println("La IA falló.");
+        }
+
+        isPlayerTurn = true; // Cambia el turno al jugador
+        checkGameState(); // Verifica el estado del juego para ver si continúa o termina
+    }
 
 }
