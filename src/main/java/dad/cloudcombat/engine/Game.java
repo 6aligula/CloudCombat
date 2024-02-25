@@ -31,6 +31,10 @@ public class Game {
         return new ArrayList<>(playerShips); // Devuelve una copia para evitar modificaciones externas
     }
 
+    public List<Ship> getAIShips() {
+        return new ArrayList<>(aiShips); // Devuelve una copia para evitar modificaciones externas
+    }
+
     private void initializeShips() {
         // Definir los tamaños de los barcos, por ejemplo:
         int[] shipSizes = { 5, 4, 3, 3, 2 };

@@ -79,28 +79,57 @@ public class GameController implements Initializable {
 		game = new Game();
 		// Coloca los barcos en el tablero, etc.
 		placePlayerShips();
+		placeAIShips();
 		updateBoardView();
 	}
 
 	private void placePlayerShips() {
-		// Ejemplo de colocación automática de barcos
+		// Ejemplo de colocación manual de barcos
 		List<Ship> ships = game.getPlayerShips();
-		for (Ship ship : ships) {
-			boolean placed = false;
-			while (!placed) {
-				int x = (int) (Math.random() * game.getPlayerBoard().getSize());
-				int y = (int) (Math.random() * game.getPlayerBoard().getSize());
-				boolean isHorizontal = Math.random() < 0.5;
+		// Definir las posiciones y orientaciones manualmente
+		int[][] positions = { { 0, 0 }, { 2, 2 }, { 4, 4 }, { 6, 6 }, { 8, 8 } }; // Ejemplo de posiciones
+		boolean[] orientations = { false, true, false, true, false }; // false para horizontal en el tablero, false para
+																		// vertical en el tablero
+		for (int i = 0; i < ships.size(); i++) {
+			Ship ship = ships.get(i);
+			int x = positions[i][0];
+			int y = positions[i][1];
+			boolean isHorizontal = orientations[i];
 
-				// Intenta colocar el barco en el tablero
-				try {
-					game.placeShip(game.getPlayerBoard(), ship, new Point(x, y), isHorizontal);
-					placed = true;
-					System.out.println("Barco colocado: " + ship + " en (" + x + ", " + y + ") " + (isHorizontal ? "Horizontal" : "Vertical"));
-					System.out.println("Coordenadas del barco: " + ship.getCoordinates().toString());
-				} catch (IllegalArgumentException e) {
-					// Si el intento de colocación falla, intenta de nuevo
-				}
+			try {
+				game.placeShip(game.getPlayerBoard(), ship, new Point(x, y), isHorizontal);
+				System.out.println("Barco colocado manualmente: " + ship + " en (" + x + ", " + y + ") "
+						+ (isHorizontal ? "Horizontal" : "Vertical"));
+			} catch (IllegalArgumentException e) {
+				System.out.println("Error al colocar barco manualmente en (" + x + ", " + y + ") "
+						+ (isHorizontal ? "Horizontal" : "Vertical"));
+			}
+		}
+	}
+
+	// método para colocar un barco en el tablero de la IA
+	private void placeAIShips() {
+		// Definir las posiciones y orientaciones manualmente para la IA
+		// Esto es solo un ejemplo, puedes elegir las posiciones que quieras
+		int[][] aiPositions = { { 1, 1 }, { 3, 3 }, { 5, 5 }, { 7, 6 }, { 9, 8 } };
+		boolean[] aiOrientations = { false, true, false, true, false }; // false para horizontal, true para vertical
+
+		List<Ship> aiShips = game.getAIShips();
+		for (int i = 0; i < aiShips.size(); i++) {
+			Ship ship = aiShips.get(i);
+			int x = aiPositions[i][0];
+			int y = aiPositions[i][1];
+			boolean isHorizontal = aiOrientations[i];
+
+			try {
+				game.placeShip(game.getAIBoard(), ship, new Point(x, y), isHorizontal);
+				// No necesitas imprimir esto a menos que estés depurando la colocación de la IA
+				System.out.println("Barco de IA colocado manualmente: " + ship + " en (" + x + ", " + y + ") "
+						+ (isHorizontal ? "Horizontal" : "Vertical"));
+			} catch (IllegalArgumentException e) {
+				System.out.println("Error al colocar barco de IA manualmente en (" + x + ", " + y + ") "
+						+ (isHorizontal ? "Horizontal" : "Vertical"));
+				// En un escenario real, podrías querer manejar este error de forma diferente
 			}
 		}
 	}
@@ -111,19 +140,19 @@ public class GameController implements Initializable {
 				System.out.println("playerGrid is null al inicio de updateBoardView!");
 				return; // Sale del método si playerGrid es null para evitar NullPointerException
 			} else {
-				System.out.println("llega aqui? ");
+				// System.out.println("llega aqui? ");
 				String buttonId = "playerBtn";
-				System.out.println("playerGrid: " + buttonId);	
-				Button btn = (Button) playerGrid.lookup("#" + buttonId);	
+				// System.out.println("playerGrid: " + buttonId);
+				Button btn = (Button) playerGrid.lookup("#" + buttonId);
 				// Actualizar el tablero del jugador
 				for (int i = 0; i < game.getPlayerBoard().getSize(); i++) {
 					for (int j = 0; j < game.getPlayerBoard().getSize(); j++) {
-						 buttonId = "playerBtn" + i + j;
+						buttonId = "playerBtn" + i + j;
 
-						 btn = (Button) playerGrid.lookup("#" + buttonId);
+						btn = (Button) playerGrid.lookup("#" + buttonId);
 						if (btn != null && game.getPlayerBoard().hasShipAt(i, j)) {
 							// Cambia el estilo del botón para indicar la presencia del barco
-							btn.setStyle("-fx-background-color: red;");
+							btn.setStyle("-fx-background-color: Green;");
 							System.out.println("Barco visualmente actualizado en " + i + ", " + j);
 						}
 					}
@@ -131,49 +160,39 @@ public class GameController implements Initializable {
 			}
 			// Resto de tu lógica para updateBoardView...
 		} catch (Exception e) {
-			System.out.println("Intento fallido de colocar barco en ");
+			System.out.println("Intento fallido de colocar barco del Player ");
 			e.printStackTrace(); // Captura cualquier otra excepción inesperada.
 		}
 
-		// Similarmente, podrías querer actualizar el tablero de la IA para reflejar los
-		// disparos hechos por el jugador
-		// Esto dependerá de cómo quieras mostrar la información en la interfaz de
-		// usuario
-		// for (int i = 0; i < game.getAIBoard().getSize(); i++) {
-		// 	for (int j = 0; j < game.getAIBoard().getSize(); j++) {
-		// 		String buttonId = "btn" + i + j;
-		// 		Button btn = (Button) aiGrid.lookup("#" + buttonId);
-		// 		if (btn != null) {
-		// 			// Suponiendo que quieras marcar los disparos hechos al tablero de la IA
-		// 			// Aquí necesitarás una lógica para decidir el color basado en si fue un
-		// 			// acierto, un fallo, etc.
-		// 			// Por ejemplo, si el disparo fue un acierto:
-		// 			// if (game.getAIBoard().isHitAt(i, j)) {
-		// 			// btn.setStyle("-fx-background-color: red;");
-		// 			// } else if (game.getAIBoard().wasShotAt(i, j)) {
-		// 			// btn.setStyle("-fx-background-color: grey;");
-		// 			// }
-		// 		}
-		// 	}
-		// }
+		try {
+			if (aiGrid == null) {
+				System.out.println("aiGrid is null al inicio de updateBoardView!");
+				return; // Sale del método si aiGrid es null para evitar NullPointerException
+			} else {
+				String buttonId = "btn";
+				// System.out.println("aiGrid: " + buttonId);
+				Button btn = (Button) aiGrid.lookup("#" + buttonId);
+				// Actualizar el tablero del jugador
+				for (int i = 0; i < game.getAIBoard().getSize(); i++) {
+					for (int j = 0; j < game.getAIBoard().getSize(); j++) {
+						buttonId = "btn" + i + j;
+
+						btn = (Button) aiGrid.lookup("#" + buttonId);
+						if (btn != null && game.getAIBoard().hasShipAt(i, j)) {
+							// Cambia el estilo del botón para indicar la presencia del barco
+							btn.setStyle("-fx-background-color: Green;");
+							System.out.println("Barco visualmente actualizado en " + i + ", " + j);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			System.out.println("Intento fallido de colocar barco de la IA");
+			e.printStackTrace(); // Captura cualquier otra excepción inesperada.
+		}
+
+	
 	}
-
-	// public void placeShip(Board board, Ship ship, Point start, boolean isHorizontal) {
-	// 	for (int i = 0; i < ship.getCoordinates().size(); i++) {
-	// 		int x = start.getX() + (isHorizontal ? i : 0);
-	// 		int y = start.getY() + (isHorizontal ? 0 : i);
-
-	// 		// Asegúrate de que las coordenadas están dentro del tablero
-	// 		if (x >= 0 && x < board.getSize() && y >= 0 && y < board.getSize()) {
-	// 			// Coloca una parte del barco en el tablero
-	// 			board.setShipAt(x, y, ship);
-	// 			// Añade la coordenada al barco
-	// 			ship.addCoordinate(new Point(x, y));
-	// 		} else {
-	// 			// Manejar el error, por ejemplo, lanzando una excepción o devolviendo false
-	// 		}
-	// 	}
-	// }
 
 	@FXML
 	private void handleButtonAction(ActionEvent event) {
