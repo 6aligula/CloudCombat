@@ -1,2 +1,27 @@
 lanzar app:
 mvn clean install exec:java
+
+--------------------------------------------------------------------------------
+Proceso con docker:
+docker-compose build
+
+--------------------------------------------------------------------------------
+Lanzar docker-compose en modo interactivo
+docker-compose run mi-aplicacion-javafx /bin/bash
+
+salida de terminal correcta:
+root@88930ada4fa6:/home/aplicacion# 
+
+--------------------------------------------------------------------------------
+Antes de lanzar el proceso con docker, debemos instalar el servidor X en mac mi caso o windows.
+----------------------------------------------------------------------------------
+Habilitar las conexiones 
+Allow connections from network clients", lo cual es necesario para que las aplicaciones que se ejecutan en contenedores 
+Docker puedan mostrar su GUI a través de XQuartz en tu Mac.
+
+xhost +
+
+-----------------------------------------
+Desabilitar las conexiones cuando termine de trabajar:
+
+xhost -
